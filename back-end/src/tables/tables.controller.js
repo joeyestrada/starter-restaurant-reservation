@@ -78,8 +78,30 @@ async function capacityMatch(req, res, next) {
 }
 
 function tableOccupied(req, res, next) {
-  if (res.locals.table.table_status !== null) {
+  if (res.locals.table.reservation_id !== null) {
     next({ status: 400, message: "occupied" });
+  }
+
+  next();
+}
+
+async function tableExists(req, res, next) {
+  const table = await service.readTable(req.params.table_id);
+
+  if (!table) {
+    next({
+      status: 404,
+      message: `table ${req.params.table_id} does not exist.`,
+    });
+  }
+
+  res.locals.table = table;
+  next();
+}
+
+function tableNotOccupied(req, res, next) {
+  if (res.locals.table.reservation_id === null) {
+    next({ status: 400, message: "table is not occupied" });
   }
 
   next();
@@ -102,6 +124,11 @@ async function update(req, res) {
     .json({ data: await service.update(reservation_id, table_id) });
 }
 
+async function destroy(req, res) {
+  const data = await service.finish(req.params.table_id);
+  res.json({ data });
+}
+
 module.exports = {
   list,
   create: [dataExists, capacityVerification, tableNameVerification, create],
@@ -113,4 +140,5 @@ module.exports = {
     tableOccupied,
     update,
   ],
+  destroy: [tableExists, tableNotOccupied, destroy],
 };
