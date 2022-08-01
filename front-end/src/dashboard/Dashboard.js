@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { listReservations } from "../utils/api";
+import { listReservations, listTables } from "../utils/api";
+import Tables from "../tables/Tables";
+import ReservationsList from "../reservations/ReservationsList";
 import ErrorAlert from "../layout/ErrorAlert";
-import { next, previous, today } from "../utils/date-time";
-import { useHistory } from "react-router-dom";
-
-import "./Dashboard.css";
 
 /**
  * Defines the dashboard page.
@@ -13,10 +11,10 @@ import "./Dashboard.css";
  * @returns {JSX.Element}
  */
 function Dashboard({ date }) {
-  const history = useHistory();
-
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
+  const [tables, setTables] = useState([]);
+  const [tablesError, setTablesError] = useState(null);
 
   useEffect(loadDashboard, [date]);
 
@@ -26,79 +24,18 @@ function Dashboard({ date }) {
     listReservations({ date }, abortController.signal)
       .then(setReservations)
       .catch(setReservationsError);
+
+    listTables(abortController.signal).then(setTables).catch(setTablesError);
+
     return () => abortController.abort();
   }
-
-  // renders all reservations specified in reservations state
-  const reservationsList = () => {
-    if (reservations.length < 1) {
-      return (
-        <>
-          <p>There are no reservations for this date.</p>
-        </>
-      );
-    }
-
-    const list = reservations.map((reservation, index) => {
-      return (
-        <tr key={index}>
-          <td>{reservation.first_name}</td>
-          <td>{reservation.last_name}</td>
-          <td>{reservation.mobile_number}</td>
-          <td>{reservation.reservation_date}</td>
-          <td>{reservation.reservation_time}</td>
-          <td>{reservation.people}</td>
-        </tr>
-      );
-    });
-
-    return (
-      <table>
-        <thead>
-          <tr key={date}>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Phone</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>People</th>
-          </tr>
-        </thead>
-        <tbody>{list}</tbody>
-      </table>
-    );
-  };
-
-  // changes rendered reservations based on date
-  const previousHandler = () => {
-    history.push(`/dashboard?date=${previous(date)}`);
-  };
-
-  const todayHandler = () => {
-    history.push(`/dashboard?date=${today()}`);
-  };
-
-  const nextHandler = () => {
-    history.push(`/dashboard?date=${next(date)}`);
-  };
 
   return (
     <main>
       <h1>Dashboard</h1>
-      <div className="d-md-flex mb-3">
-        <h4 className="mb-0">Reservations for date: {date}</h4>
-      </div>
-      <ErrorAlert error={reservationsError} />
-      <button className="btn btn-primary mr-1" onClick={previousHandler}>
-        Previous
-      </button>
-      <button className="btn btn-secondary mr-1" onClick={todayHandler}>
-        Today
-      </button>
-      <button className="btn btn-info" onClick={nextHandler}>
-        Next
-      </button>
-      {reservations && reservationsList()}
+      <ErrorAlert error={reservationsError || tablesError} />
+      <ReservationsList date={date} reservations={reservations} />
+      <Tables tables={tables} />
     </main>
   );
 }
