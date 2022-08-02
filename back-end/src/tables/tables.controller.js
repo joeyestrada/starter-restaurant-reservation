@@ -100,6 +100,17 @@ async function tableExists(req, res, next) {
   next();
 }
 
+function tableIsNotNull(req, res, next) {
+  if (req.params.table_id === "null") {
+    next({
+      status: 400,
+      message: "table cannot be null. please select a legitimate table",
+    });
+  }
+  
+  next();
+}
+
 function tableNotOccupied(req, res, next) {
   if (res.locals.table.reservation_id === null) {
     next({ status: 400, message: "table is not occupied" });
@@ -144,6 +155,7 @@ module.exports = {
     reservationIdExistsInBody,
     reservationIdExistsInDatabase,
     reservationIsNotSeated,
+    tableIsNotNull,
     capacityMatch,
     tableOccupied,
     update,

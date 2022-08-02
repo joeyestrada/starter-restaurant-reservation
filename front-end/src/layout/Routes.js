@@ -22,6 +22,7 @@ import Seat from "../reservations/Seat";
 function Routes() {
   const query = useQuery();
   const date = query.get("date");
+  const mobile_number = query.get("mobile_number");
 
   return (
     <Switch>
@@ -30,7 +31,7 @@ function Routes() {
       </Route>
 
       <Route path="/dashboard">
-        <Dashboard date={date || today()} />
+        <Dashboard date={date || today()} mobile_number={mobile_number} />
       </Route>
 
       <Route exact={true} path="/reservations">

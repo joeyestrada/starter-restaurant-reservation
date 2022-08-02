@@ -10,20 +10,26 @@ import ErrorAlert from "../layout/ErrorAlert";
  *  the date for which the user wants to view reservations.
  * @returns {JSX.Element}
  */
-function Dashboard({ date }) {
+function Dashboard({ date, mobile_number }) {
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
   const [tables, setTables] = useState([]);
   const [tablesError, setTablesError] = useState(null);
 
-  useEffect(loadDashboard, [date]);
+  useEffect(loadDashboard, [date, mobile_number]);
 
   function loadDashboard() {
     const abortController = new AbortController();
     setReservationsError(null);
-    listReservations({ date }, abortController.signal)
-      .then(setReservations)
-      .catch(setReservationsError);
+    if (mobile_number) {
+      listReservations({ mobile_number }, abortController.signal)
+        .then(setReservations)
+        .catch(setReservationsError);
+    } else {
+      listReservations({ date }, abortController.signal)
+        .then(setReservations)
+        .catch(setReservationsError);
+    }
 
     listTables(abortController.signal).then(setTables).catch(setTablesError);
 
@@ -34,7 +40,11 @@ function Dashboard({ date }) {
     <main>
       <h1>Dashboard</h1>
       <ErrorAlert error={reservationsError || tablesError} />
-      <ReservationsList date={date} reservations={reservations} />
+      <ReservationsList
+        date={date}
+        mobile_number={mobile_number}
+        reservations={reservations}
+      />
       <Tables tables={tables} loadDashboard={loadDashboard} />
     </main>
   );

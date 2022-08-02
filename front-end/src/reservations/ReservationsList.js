@@ -1,21 +1,26 @@
 import React from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { next, previous, today } from "../utils/date-time";
 
-export default function ReservationsList({ date, reservations }) {
+export default function ReservationsList({
+  date,
+  mobile_number,
+  reservations,
+}) {
+  console.log(date, mobile_number);
   const history = useHistory();
 
   const reservationsList = () => {
     if (reservations.length < 1) {
       return (
         <>
-          <p>There are no reservations for this date.</p>
+          <p>There are no reservations{!mobile_number && " on this date"}.</p>
         </>
       );
     }
 
     const list = reservations.map((reservation) => {
-      console.log(reservation);
       return (
         <tr key={reservation.reservation_id}>
           <td>{reservation.first_name}</td>
@@ -41,7 +46,7 @@ export default function ReservationsList({ date, reservations }) {
     return (
       <table className="table mt-3">
         <thead>
-          <tr key={date}>
+          <tr>
             <th>First Name</th>
             <th>Last Name</th>
             <th>Phone</th>
@@ -70,20 +75,28 @@ export default function ReservationsList({ date, reservations }) {
     history.push(`/dashboard?date=${next(date)}`);
   };
 
+  const dateButtons = () => {
+    return (
+      <>
+        <div className="d-md-flex mb-3">
+          <h4 className="mb-0">Reservations for date: {date}</h4>
+        </div>
+        <button className="btn btn-primary mr-1" onClick={previousHandler}>
+          Previous
+        </button>
+        <button className="btn btn-secondary mr-1" onClick={todayHandler}>
+          Today
+        </button>
+        <button className="btn btn-info" onClick={nextHandler}>
+          Next
+        </button>
+      </>
+    );
+  };
+
   return (
     <>
-      <div className="d-md-flex mb-3">
-        <h4 className="mb-0">Reservations for date: {date}</h4>
-      </div>
-      <button className="btn btn-primary mr-1" onClick={previousHandler}>
-        Previous
-      </button>
-      <button className="btn btn-secondary mr-1" onClick={todayHandler}>
-        Today
-      </button>
-      <button className="btn btn-info" onClick={nextHandler}>
-        Next
-      </button>
+      {!mobile_number && dateButtons()}
       {reservations && reservationsList()}
     </>
   );
