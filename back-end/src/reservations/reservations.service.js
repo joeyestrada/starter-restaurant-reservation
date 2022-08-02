@@ -3,7 +3,8 @@ const knex = require("../db/connection");
 function list(date) {
   return knex("reservations")
     .select("*")
-    .where({ reservation_date: date, status: "booked" || "seated" })
+    .where({ reservation_date: date, status: "booked" })
+    .orWhere({ reservation_date: date, status: "seated" })
     .orderBy("reservation_time");
 }
 
