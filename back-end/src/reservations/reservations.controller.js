@@ -166,7 +166,15 @@ async function reservationExists(req, res, next) {
 }
 
 async function list(req, res) {
-  res.json({ data: await service.list(req.query.date) });
+  if (req.query.date) {
+    return res.json({ data: await service.list(req.query.date) });
+  }
+
+  if (req.query.mobile_number) {
+    return res.json({
+      data: await service.listByNumber(req.query.mobile_number),
+    });
+  }
 }
 
 async function create(req, res) {
