@@ -15,6 +15,7 @@ export default function ReservationsList({ date, reservations }) {
     }
 
     const list = reservations.map((reservation) => {
+      console.log(reservation);
       return (
         <tr key={reservation.reservation_id}>
           <td>{reservation.first_name}</td>
@@ -23,10 +24,15 @@ export default function ReservationsList({ date, reservations }) {
           <td>{reservation.reservation_date}</td>
           <td>{reservation.reservation_time}</td>
           <td>{reservation.people}</td>
+          <td data-reservation-id-status={reservation.reservation_id}>
+            {reservation.status}
+          </td>
           <td>
-            <Link to={`/reservations/${reservation.reservation_id}/seat`}>
-              <button className="btn btn-secondary">Seat</button>
-            </Link>
+            {reservation.status === "booked" && (
+              <Link to={`/reservations/${reservation.reservation_id}/seat`}>
+                <button className="btn btn-secondary">Seat</button>
+              </Link>
+            )}
           </td>
         </tr>
       );
@@ -42,6 +48,7 @@ export default function ReservationsList({ date, reservations }) {
             <th>Date</th>
             <th>Time</th>
             <th>People</th>
+            <th>Status</th>
             <th>Give Table</th>
           </tr>
         </thead>
@@ -62,7 +69,7 @@ export default function ReservationsList({ date, reservations }) {
   const nextHandler = () => {
     history.push(`/dashboard?date=${next(date)}`);
   };
-  
+
   return (
     <>
       <div className="d-md-flex mb-3">

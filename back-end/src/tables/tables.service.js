@@ -10,34 +10,50 @@ function create(table) {
     .then((tables) => tables[0]);
 }
 
-function update(resId, tableId) {
-  const table = { reservation_id: resId };
-  return knex("tables")
-    .select("*")
-    .where({ table_id: tableId })
-    .update(table, "*");
+async function update(resId, tableId) {
+  function updateTables() {
+    const tablesTable = { reservation_id: resId };
+    return knex("tables")
+      .select("*")
+      .where({ table_id: tableId })
+      .update(tablesTable, "*");
+  }
+
+  function updateReservations() {
+    const resTable = { status: "seated" };
+    return knex("reservations")
+      .select("*")
+      .where({ reservation_id: resId })
+      .update(resTable, "*");
+  }
+
+  await updateTables();
+  await updateReservations();
 }
 
 async function finish(tableId) {
-  const table = { reservation_id: null };
   const { reservation_id } = await knex("tables")
     .select("reservation_id")
     .where({ table_id: tableId })
     .first();
 
   function updateTable() {
+    const table = { reservation_id: null };
     return knex("tables")
       .select("*")
       .where({ table_id: tableId })
       .update(table, "*");
   }
 
-  function deleteRes() {
-    return knex("reservations").where({ reservation_id: reservation_id }).del();
+  function updateRes() {
+    const reversationsTable = { status: "finished" };
+    return knex("reservations")
+      .where({ reservation_id: reservation_id })
+      .update(reversationsTable, "*")
   }
 
   await updateTable();
-  await deleteRes();
+  await updateRes();
 }
 
 function readRes(resId) {
