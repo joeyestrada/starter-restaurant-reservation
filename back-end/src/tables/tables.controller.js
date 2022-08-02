@@ -51,6 +51,7 @@ async function reservationIdExistsInDatabase(req, res, next) {
     });
   }
 
+  res.locals.reservation = check;
   next();
 }
 
@@ -107,6 +108,14 @@ function tableNotOccupied(req, res, next) {
   next();
 }
 
+function reservationIsNotSeated(req, res, next) {
+  if (res.locals.reservation.status === "seated") {
+    next({ status: 400, message: "reservation already seated" });
+  }
+
+  next();
+}
+
 async function list(req, res) {
   res.json({ data: await service.list() });
 }
@@ -119,9 +128,7 @@ async function update(req, res) {
   const { reservation_id } = req.body.data;
   const { table_id } = req.params;
 
-  res
-    .status(200)
-    .json({ data: await service.update(reservation_id, table_id) });
+  res.json({ data: await service.update(reservation_id, table_id) });
 }
 
 async function destroy(req, res) {
@@ -136,6 +143,7 @@ module.exports = {
     dataExists,
     reservationIdExistsInBody,
     reservationIdExistsInDatabase,
+    reservationIsNotSeated,
     capacityMatch,
     tableOccupied,
     update,

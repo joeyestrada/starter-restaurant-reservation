@@ -54,6 +54,37 @@ function bodyDataVerification(req, res, next) {
   next();
 }
 
+function ifSeated(req, res, next) {
+  if (res.locals.data.status !== "booked") {
+    next({
+      status: 400,
+      message: `cannot make a reservation that has a status of ${res.locals.data.status}`,
+    });
+  }
+  next();
+}
+
+function statusCheck(req, res, next) {
+  const toCheck = ["booked", "seated", "finished"];
+  const { status } = req.body.data;
+  if (!toCheck.includes(status)) {
+    next({
+      status: 400,
+      message: `reservation is on status: ${status}`,
+    });
+  }
+
+  next();
+}
+
+function isFinished(req, res, next) {
+  if (res.locals.data.status === "finished") {
+    next({ status: 400, message: "reservation cannot be finished" });
+  }
+
+  next();
+}
+
 function dateCheck(req, res, next) {
   const dayIncoming = new Date(res.locals.data.reservation_date);
   if (dayIncoming.getDay() === 1) {
@@ -129,6 +160,7 @@ async function reservationExists(req, res, next) {
     });
   }
 
+  res.locals.data = data;
   next();
 }
 
@@ -145,8 +177,19 @@ async function read(req, res) {
   res.json({ data: await service.read(req.params.reservation_id) });
 }
 
+async function update(req, res) {
+  const data = await service.read(req.params.reservation_id);
+  const editRes = {
+    ...data,
+    status: req.body.data.status,
+  };
+
+  res.status(200).json({ data: editRes });
+}
+
 module.exports = {
   list,
-  create: [bodyDataVerification, dateCheck, timeCheck, create],
+  create: [bodyDataVerification, dateCheck, timeCheck, ifSeated, create],
   read: [reservationExists, read],
+  update: [reservationExists, statusCheck, isFinished, update],
 };
