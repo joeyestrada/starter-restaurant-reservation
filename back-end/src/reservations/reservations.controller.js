@@ -55,7 +55,8 @@ function bodyDataVerification(req, res, next) {
 }
 
 function ifSeated(req, res, next) {
-  if (res.locals.data.status !== "booked") {
+  const toCheck = ["seated", "finished"];
+  if (toCheck.includes(res.locals.data.status)) {
     next({
       status: 400,
       message: `cannot make a reservation that has a status of ${res.locals.data.status}`,
