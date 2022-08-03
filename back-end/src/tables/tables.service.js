@@ -49,7 +49,7 @@ async function finish(tableId) {
     const reversationsTable = { status: "finished" };
     return knex("reservations")
       .where({ reservation_id: reservation_id })
-      .update(reversationsTable, "*")
+      .update(reversationsTable, "*");
   }
 
   await updateTable();

@@ -10,6 +10,8 @@ export default function Seat() {
   const [tablesError, setTablesError] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
 
+  console.log(selectedTable);
+
   useEffect(loadDashboard, []);
 
   function loadDashboard() {
@@ -42,6 +44,8 @@ export default function Seat() {
     event.preventDefault();
     const abort = new AbortController();
 
+    console.log(selectedTable);
+
     try {
       await updateTable(
         selectedTable,
@@ -66,14 +70,12 @@ export default function Seat() {
       <h4>Reservation {`${params.reservation_id}`}</h4>
       <form onSubmit={submitHandler}>
         <div>
-          <label htmlFor="table_id" className="col mr-2">
-            Table - Capacity
-          </label>
           <select
             onChange={(event) => setSelectedTable(event.target.value)}
             name="table_id"
-            className="col-1"
+            className="col-2"
           >
+            <option value={null}>[Table] - [Capacity]</option>
             {tablesOptions()}
           </select>
         </div>

@@ -1,4 +1,5 @@
 const service = require("./reservations.service");
+const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
 const dateFormat = /\d\d\d\d-\d\d-\d\d/;
 const timeFormat = /\d\d:\d\d/;
@@ -66,7 +67,7 @@ function ifSeated(req, res, next) {
 }
 
 function statusCheck(req, res, next) {
-  const toCheck = ["booked", "seated", "finished"];
+  const toCheck = ["booked", "seated", "finished", "cancelled"];
   const { status } = req.body.data;
   if (!toCheck.includes(status)) {
     next({
@@ -166,7 +167,15 @@ async function reservationExists(req, res, next) {
 }
 
 async function list(req, res) {
-  res.json({ data: await service.list(req.query.date) });
+  if (req.query.date) {
+    return res.json({ data: await service.list(req.query.date) });
+  }
+
+  if (req.query.mobile_number) {
+    return res.json({
+      data: await service.listByNumber(req.query.mobile_number),
+    });
+  }
 }
 
 async function create(req, res) {
@@ -185,12 +194,35 @@ async function update(req, res) {
     status: req.body.data.status,
   };
 
-  res.status(200).json({ data: editRes });
+  res.json({ data: await service.update(editRes) });
+}
+
+async function edit(req, res) {
+  const incoming = req.body.data;
+  const resId = req.params.reservation_id;
+
+  res.json({ data: await service.edit(incoming, resId) });
 }
 
 module.exports = {
-  list,
-  create: [bodyDataVerification, dateCheck, timeCheck, ifSeated, create],
-  read: [reservationExists, read],
-  update: [reservationExists, statusCheck, isFinished, update],
+  list: [asyncErrorBoundary(list)],
+  create: [
+    bodyDataVerification,
+    dateCheck,
+    timeCheck,
+    ifSeated,
+    asyncErrorBoundary(create),
+  ],
+  read: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(read)],
+  update: [
+    asyncErrorBoundary(reservationExists),
+    statusCheck,
+    isFinished,
+    asyncErrorBoundary(update),
+  ],
+  edit: [
+    asyncErrorBoundary(reservationExists),
+    bodyDataVerification,
+    asyncErrorBoundary(edit),
+  ],
 };

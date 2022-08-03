@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import { createReservation } from "../utils/api";
+import React, { useState, useEffect } from "react";
+import { useHistory, useParams } from "react-router-dom";
 import { formatAsDate, formatAsTime } from "../utils/date-time";
+import { readReservation, updateReservation } from "../utils/api";
 
-export default function NewRes() {
+export default function EditRes() {
   const history = useHistory();
+  const params = useParams();
 
   const initialFormState = {
     first_name: "",
@@ -18,8 +19,35 @@ export default function NewRes() {
   const [formData, setFormData] = useState(initialFormState);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  useEffect(() => {
+    const abort = new AbortController();
+
+    async function readRes() {
+      try {
+        const response = await readReservation(
+          params.reservation_id,
+          abort.signal,
+        );
+        setFormData({
+          ...response,
+          reservation_date: formatAsDate(response.reservation_date),
+        });
+      } catch (error) {
+        setErrorMessage(error);
+      }
+    }
+
+    readRes();
+    return () => abort.abort();
+  }, [params.reservation_id]);
+
   const changeHandler = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  const cancelHandler = (event) => {
+    event.preventDefault();
+    history.goBack();
   };
 
   const submitHandler = async (event) => {
@@ -34,16 +62,11 @@ export default function NewRes() {
     };
 
     try {
-      await createReservation(formatedData, abort.signal);
+      await updateReservation(formatedData, abort.signal);
       history.push(`/dashboard?date=${formData.reservation_date}`);
     } catch (error) {
       setErrorMessage(error);
     }
-  };
-
-  const cancelHandler = (event) => {
-    event.preventDefault();
-    history.goBack();
   };
 
   const errorElement = () => {
@@ -56,7 +79,7 @@ export default function NewRes() {
 
   return (
     <>
-      <h1>Create Reservation</h1>
+      <h1>Edit Reservation</h1>
       {errorMessage && errorElement()}
       <form onSubmit={submitHandler}>
         <div className="row mt-3">

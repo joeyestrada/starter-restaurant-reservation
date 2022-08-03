@@ -11,6 +11,8 @@ import Dashboard from "../dashboard/Dashboard";
 import NewRes from "../reservations/NewRes";
 import NewTable from "../tables/NewTable";
 import Seat from "../reservations/Seat";
+import Search from "../reservations/Search";
+import EditRes from "../reservations/EditRes";
 
 /**
  * Defines all the routes for the application.
@@ -22,6 +24,7 @@ import Seat from "../reservations/Seat";
 function Routes() {
   const query = useQuery();
   const date = query.get("date");
+  const mobile_number = query.get("mobile_number");
 
   return (
     <Switch>
@@ -30,7 +33,7 @@ function Routes() {
       </Route>
 
       <Route path="/dashboard">
-        <Dashboard date={date || today()} />
+        <Dashboard date={date || today()} mobile_number={mobile_number} />
       </Route>
 
       <Route exact={true} path="/reservations">
@@ -47,6 +50,14 @@ function Routes() {
 
       <Route path={"/tables/new"}>
         <NewTable />
+      </Route>
+
+      <Route path={"/search"}>
+        <Search />
+      </Route>
+
+      <Route path={"/reservations/:reservation_id/edit"}>
+        <EditRes />
       </Route>
 
       <Route>

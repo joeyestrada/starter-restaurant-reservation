@@ -1,4 +1,5 @@
 const service = require("./tables.service");
+const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
 function dataExists(req, res, next) {
   const { data } = req.body;
@@ -100,6 +101,17 @@ async function tableExists(req, res, next) {
   next();
 }
 
+function tableIsNotNull(req, res, next) {
+  if (req.params.table_id === "null") {
+    next({
+      status: 400,
+      message: "table cannot be null. please select a legitimate table",
+    });
+  }
+
+  next();
+}
+
 function tableNotOccupied(req, res, next) {
   if (res.locals.table.reservation_id === null) {
     next({ status: 400, message: "table is not occupied" });
@@ -137,16 +149,26 @@ async function destroy(req, res) {
 }
 
 module.exports = {
-  list,
-  create: [dataExists, capacityVerification, tableNameVerification, create],
+  list: [asyncErrorBoundary(list)],
+  create: [
+    dataExists,
+    capacityVerification,
+    tableNameVerification,
+    asyncErrorBoundary(create),
+  ],
   update: [
     dataExists,
     reservationIdExistsInBody,
-    reservationIdExistsInDatabase,
+    asyncErrorBoundary(reservationIdExistsInDatabase),
     reservationIsNotSeated,
-    capacityMatch,
+    tableIsNotNull,
+    asyncErrorBoundary(capacityMatch),
     tableOccupied,
-    update,
+    asyncErrorBoundary(update),
   ],
-  destroy: [tableExists, tableNotOccupied, destroy],
+  destroy: [
+    asyncErrorBoundary(tableExists),
+    tableNotOccupied,
+    asyncErrorBoundary(destroy),
+  ],
 };
