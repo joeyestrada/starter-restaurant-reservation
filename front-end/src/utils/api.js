@@ -68,6 +68,23 @@ export async function listReservations(params, signal) {
     .then(formatReservationTime);
 }
 
+export async function readReservation(resId, signal) {
+  const url = new URL(`${API_BASE_URL}/reservations/${resId}`);
+  return await fetchJson(url, { headers, signal, method: "GET" }, []);
+}
+
+export async function updateReservation(data, signal) {
+  const url = new URL(`${API_BASE_URL}/reservations/${data.reservation_id}`);
+  const options = {
+    headers,
+    signal,
+    method: "PUT",
+    body: JSON.stringify({ data: data }),
+  };
+
+  return await fetchJson(url, options, data);
+}
+
 // create a new reservation
 
 export async function createReservation(data, signal) {
@@ -76,6 +93,20 @@ export async function createReservation(data, signal) {
     headers,
     signal,
     method: "POST",
+    body: JSON.stringify({ data: data }),
+  };
+
+  return await fetchJson(url, options, data);
+}
+
+export async function cancelReservation(data, resId, signal) {
+  const url = new URL(
+    `${API_BASE_URL}/reservations/${resId}/status`,
+  );
+  const options = {
+    headers,
+    signal,
+    method: "PUT",
     body: JSON.stringify({ data: data }),
   };
 

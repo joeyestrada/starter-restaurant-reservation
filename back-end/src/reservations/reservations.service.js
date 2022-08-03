@@ -30,7 +30,7 @@ function read(id) {
 function update(data) {
   return knex("reservations")
     .select("*")
-    .where({ reservation_id: data.resId })
+    .where({ reservation_id: data.reservation_id })
     .update(data, "*")
     .then((reservations) => reservations[0]);
 }

@@ -2,11 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { next, previous, today } from "../utils/date-time";
+import { cancelReservation } from "../utils/api";
 
 export default function ReservationsList({
   date,
   mobile_number,
   reservations,
+  loadDashboard,
 }) {
   const history = useHistory();
 
@@ -18,6 +20,27 @@ export default function ReservationsList({
         </>
       );
     }
+
+    const cancelHandler = async (event) => {
+      if (
+        window.confirm(
+          "Do you want to cancel this reservation? This cannot be undone.",
+        )
+      ) {
+        const abort = new AbortController();
+        try {
+          await cancelReservation(
+            { status: "cancelled" },
+            event.target.value,
+            abort.signal,
+          );
+          loadDashboard();
+          return () => abort.abort();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
 
     const list = reservations.map((reservation) => {
       return (
@@ -34,9 +57,20 @@ export default function ReservationsList({
           <td>
             {reservation.status === "booked" && (
               <Link to={`/reservations/${reservation.reservation_id}/seat`}>
-                <button className="btn btn-secondary">Seat</button>
+                <button className="btn btn-primary mr-1">Seat</button>
               </Link>
             )}
+            <Link to={`/reservations/${reservation.reservation_id}/edit`}>
+              <button className="btn btn-secondary mr-1">Edit</button>
+            </Link>
+            <button
+              className="btn btn-danger"
+              data-reservation-id-cancel={reservation.reservation_id}
+              value={reservation.reservation_id}
+              onClick={cancelHandler}
+            >
+              Cancel
+            </button>
           </td>
         </tr>
       );
@@ -53,7 +87,7 @@ export default function ReservationsList({
             <th>Time</th>
             <th>People</th>
             <th>Status</th>
-            <th>Give Table</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>{list}</tbody>

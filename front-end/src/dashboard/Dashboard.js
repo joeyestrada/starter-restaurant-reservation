@@ -44,6 +44,7 @@ function Dashboard({ date, mobile_number }) {
         date={date}
         mobile_number={mobile_number}
         reservations={reservations}
+        loadDashboard={loadDashboard}
       />
       <Tables tables={tables} loadDashboard={loadDashboard} />
     </main>

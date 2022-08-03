@@ -1,4 +1,5 @@
 const service = require("./reservations.service");
+const asyncErrorBoundary = require("../errors/asyncErrorBoundary");
 
 const dateFormat = /\d\d\d\d-\d\d-\d\d/;
 const timeFormat = /\d\d:\d\d/;
@@ -193,7 +194,7 @@ async function update(req, res) {
     status: req.body.data.status,
   };
 
-  res.status(200).json({ data: editRes });
+  res.json({ data: await service.update(editRes) });
 }
 
 async function edit(req, res) {
@@ -204,9 +205,24 @@ async function edit(req, res) {
 }
 
 module.exports = {
-  list,
-  create: [bodyDataVerification, dateCheck, timeCheck, ifSeated, create],
-  read: [reservationExists, read],
-  update: [reservationExists, statusCheck, isFinished, update],
-  edit: [reservationExists, bodyDataVerification, edit],
+  list: [asyncErrorBoundary(list)],
+  create: [
+    bodyDataVerification,
+    dateCheck,
+    timeCheck,
+    ifSeated,
+    asyncErrorBoundary(create),
+  ],
+  read: [asyncErrorBoundary(reservationExists), asyncErrorBoundary(read)],
+  update: [
+    asyncErrorBoundary(reservationExists),
+    statusCheck,
+    isFinished,
+    asyncErrorBoundary(update),
+  ],
+  edit: [
+    asyncErrorBoundary(reservationExists),
+    bodyDataVerification,
+    asyncErrorBoundary(edit),
+  ],
 };
