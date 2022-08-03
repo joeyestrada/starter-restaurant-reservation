@@ -8,14 +8,13 @@ export default function ReservationsList({
   mobile_number,
   reservations,
 }) {
-  console.log(date, mobile_number);
   const history = useHistory();
 
   const reservationsList = () => {
     if (reservations.length < 1) {
       return (
         <>
-          <p>There are no reservations{!mobile_number && " on this date"}.</p>
+          <p>No reservations found{!mobile_number && " on this date"}.</p>
         </>
       );
     }

@@ -35,10 +35,19 @@ function update(data) {
     .then((reservations) => reservations[0]);
 }
 
+function edit(data, resId) {
+  return knex("reservations")
+    .select("*")
+    .where({ reservation_id: resId })
+    .update(data, "*")
+    .then((reservations) => reservations[0]);
+}
+
 module.exports = {
   list,
   create,
   read,
   update,
   listByNumber,
+  edit,
 };

@@ -66,7 +66,7 @@ function ifSeated(req, res, next) {
 }
 
 function statusCheck(req, res, next) {
-  const toCheck = ["booked", "seated", "finished"];
+  const toCheck = ["booked", "seated", "finished", "cancelled"];
   const { status } = req.body.data;
   if (!toCheck.includes(status)) {
     next({
@@ -196,9 +196,17 @@ async function update(req, res) {
   res.status(200).json({ data: editRes });
 }
 
+async function edit(req, res) {
+  const incoming = req.body.data;
+  const resId = req.params.reservation_id;
+
+  res.json({ data: await service.edit(incoming, resId) });
+}
+
 module.exports = {
   list,
   create: [bodyDataVerification, dateCheck, timeCheck, ifSeated, create],
   read: [reservationExists, read],
   update: [reservationExists, statusCheck, isFinished, update],
+  edit: [reservationExists, bodyDataVerification, edit],
 };
